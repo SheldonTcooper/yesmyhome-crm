@@ -81,22 +81,33 @@
     <script>
         async function loadLeads() {
             try {
-                // Carregar dados do arquivo storage/leads.json
-                const response = await fetch('/api/leads');
-                const data = await response.json();
+                // Ler dados do arquivo storage/leads.json via server
+                const response = await fetch('/storage/leads.json');
+                if (!response.ok) throw new Error('Arquivo não encontrado');
 
-                if (data.leads && Array.isArray(data.leads)) {
-                    const leads = data.leads;
+                const leads = await response.json();
 
+                if (Array.isArray(leads)) {
                     // Atualizar estatísticas
                     document.getElementById('total-leads').textContent = leads.length;
                     document.getElementById('leads-novo').textContent = leads.filter(l => l.status === 'novo').length;
-                    document.getElementById('leads-sms').textContent = leads.length; // Todos recebem SMS
+                    document.getElementById('leads-sms').textContent = leads.length;
                     document.getElementById('leads-email').textContent = leads.filter(l => l.email).length;
 
                     // Carregar últimos 10 leads
                     const tbody = document.getElementById('leads-body');
                     tbody.innerHTML = '';
+
+                    if (leads.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="8" style="text-align: center; color: #8b949e;">
+                                    Nenhum lead ainda. Volte para a demo e envie um formulário!
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
 
                     leads.slice(-10).reverse().forEach(lead => {
                         const row = document.createElement('tr');
@@ -119,7 +130,7 @@
                 document.getElementById('leads-body').innerHTML = `
                     <tr>
                         <td colspan="8" style="text-align: center; color: #3fb950;">
-                            ✅ Dashboard funcionando! Leads serão exibidos aqui.
+                            ⏳ Carregando dados...
                         </td>
                     </tr>
                 `;
@@ -129,8 +140,8 @@
         // Carregar leads ao abrir a página
         loadLeads();
 
-        // Recarregar a cada 10 segundos
-        setInterval(loadLeads, 10000);
+        // Recarregar a cada 5 segundos
+        setInterval(loadLeads, 5000);
     </script>
 </body>
 </html>

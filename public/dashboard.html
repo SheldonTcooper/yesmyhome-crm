@@ -81,9 +81,9 @@
     <script>
         async function loadLeads() {
             try {
-                // Ler dados do arquivo storage/leads.json via server
-                const response = await fetch('/storage/leads.json');
-                if (!response.ok) throw new Error('Arquivo não encontrado');
+                // Ler dados da API
+                const response = await fetch('/api/leads-json');
+                if (!response.ok) throw new Error('Erro ao buscar leads');
 
                 const leads = await response.json();
 

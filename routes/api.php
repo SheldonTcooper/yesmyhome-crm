@@ -14,6 +14,15 @@ Route::get('/health', function () {
     return response()->json(['success' => true, 'backend_online' => false]);
 });
 
+Route::get('/leads-json', function () {
+    $file = storage_path('leads.json');
+    if (file_exists($file)) {
+        $leads = json_decode(file_get_contents($file), true) ?? [];
+        return response()->json($leads);
+    }
+    return response()->json([]);
+});
+
 Route::post('/leads', [LeadController::class, 'create']);
 Route::get('/leads', [LeadController::class, 'list']);
 

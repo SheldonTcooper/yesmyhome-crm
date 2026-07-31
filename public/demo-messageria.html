@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Mensageria Automática</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .card h2 {
+            color: #58a6ff;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #30363d;
+            padding-bottom: 10px;
+        }
+        .message-box {
+            background: #161b22;
+            border: 1px solid #30363d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .message-sms {
+            border-left: 4px solid #238636;
+        }
+        .message-email {
+            border-left: 4px solid #0969da;
+        }
+        .message-title {
+            font-weight: 600;
+            color: #58a6ff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .message-content {
+            color: #c9d1d9;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .message-meta {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #30363d;
+            color: #8b949e;
+            font-size: 12px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .status-success {
+            background: #238636;
+            color: white;
+        }
+        .status-pending {
+            background: #0969da;
+            color: white;
+        }
+        .flow-diagram {
+            background: #161b22;
+            border: 1px solid #30363d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .flow-step:last-child {
+            margin-bottom: 0;
+        }
+        .step-number {
+            background: #238636;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .step-text {
+            color: #c9d1d9;
+        }
+        .arrow {
+            color: #58a6ff;
+            margin-right: 10px;
+        }
+        .info-box {
+            background: #0d419f;
+            border: 1px solid #1f6feb;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .btn {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #2ea043;
+        }
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 Demo - Mensageria Automática</h1>
+            <p>Sistema integrado de SMS, WhatsApp e Email</p>
+        </div>
+
+        <div class="demo-grid">
+            <!-- SMS Automático -->
+            <div class="card">
+                <h2>📱 SMS Automático (Twilio)</h2>
+
+                <div class="info-box">
+                    ✅ <strong>Status:</strong> Sistema integrado e funcional<br>
+                    <strong>Próximo passo:</strong> Configurar número Twilio brasileiro
+                </div>
+
+                <div class="message-box message-sms">
+                    <div class="message-title">📤 SMS ENVIADO AUTOMATICAMENTE</div>
+                    <div class="message-content">
+                        Oi João Silva! Recebemos sua solicitação. A YesMyHome em breve retorna com as melhores opções. 🏠
+                    </div>
+                    <div class="message-meta">
+                        Para: +55 41 98519-7035<br>
+                        Enviado via: Twilio SMS<br>
+                        Horário: 30/07/2026 18:30
+                    </div>
+                    <span class="status-badge status-success">✓ Entregue</span>
+                </div>
+
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="step-number">1</span>
+                        <span class="step-text">Lead preenche formulário</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="arrow">↓</span>
+                        <span class="step-number">2</span>
+                        <span class="step-text">CRM recebe dados via webhook</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="arrow">↓</span>
+                        <span class="step-number">3</span>
+                        <span class="step-text">Twilio envia SMS automaticamente</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="arrow">↓</span>
+                        <span class="step-number">4</span>
+                        <span class="step-text">Cliente recebe confirmação</span>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="alert('✅ SMS enviado para +55 41 98519-7035\n\nMensagem: Oi João Silva! Recebemos sua solicitação...')">
+                    📤 Testar SMS Agora
+                </button>
+            </div>
+
+            <!-- Email Automático -->
+            <div class="card">
+                <h2>📧 Email Automático (Resend)</h2>
+
+                <div class="info-box">
+                    ⚠️ <strong>Status:</strong> Awaiting domain verification<br>
+                    <strong>Próximo passo:</strong> Verificar domínio tauritecnologia.com.br no Resend
+                </div>
+
+                <div class="message-box message-email">
+                    <div class="message-title">📥 EMAIL DE BOAS-VINDAS</div>
+                    <div class="message-content">
+                        <strong>Assunto:</strong> Bem-vindo ao YesMyHome!<br><br>
+                        Oi João Silva,<br><br>
+                        Obrigado por entrar em contato com a YesMyHome. Sua solicitação foi recebida com sucesso!<br><br>
+                        Nossa equipe já está analisando as melhores opções de imóveis para você e em breve retornaremos com propostas personalizadas.<br><br>
+                        <strong>Entre em contato conosco:</strong><br>
+                        WhatsApp: (41) 99203-0057<br>
+                        Telefone: (41) 3244-5733
+                    </div>
+                    <div class="message-meta">
+                        Para: joao@email.com<br>
+                        Enviado via: Resend Email<br>
+                        Horário: 30/07/2026 18:30
+                    </div>
+                    <span class="status-badge status-pending">⏳ Pendente (Verificar Domínio)</span>
+                </div>
+
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="step-number">1</span>
+                        <span class="step-text">Lead criado no CRM</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="arrow">↓</span>
+                        <span class="step-number">2</span>
+                        <span class="step-text">Email disparado via Resend</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="arrow">↓</span>
+                        <span class="step-number">3</span>
+                        <span class="step-text">Cliente recebe in inbox</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="arrow">↓</span>
+                        <span class="step-number">4</span>
+                        <span class="step-text">Admin vê lead no Dashboard</span>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="alert('✅ Email enviado para joao@email.com\n\nAssunto: Bem-vindo ao YesMyHome!')">
+                    📧 Testar Email Agora
+                </button>
+            </div>
+        </div>
+
+        <!-- WhatsApp Integration -->
+        <div class="card">
+            <h2>💬 WhatsApp Automático (Integração Futura)</h2>
+
+            <div class="info-box">
+                🔄 <strong>Status:</strong> Pronto para integração<br>
+                <strong>Como funciona:</strong> Cliente envia mensagem no WhatsApp → Webhook recebe → CRM cria lead automaticamente
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="message-box message-sms">
+                    <div class="message-title">📱 CLIENTE ENVIA</div>
+                    <div class="message-content">
+                        Oi! Estou procurando um apartamento para alugar em Curitiba...
+                    </div>
+                    <div class="message-meta">
+                        Para: +55 41 99203-0057<br>
+                        Plataforma: WhatsApp Business
+                    </div>
+                </div>
+
+                <div class="message-box message-email">
+                    <div class="message-title">🤖 SISTEMA RESPONDE</div>
+                    <div class="message-content">
+                        Oi! Obrigado por entrar em contato com a YesMyHome. Sua mensagem foi recebida. Em breve um agente retorna! 👍
+                    </div>
+                    <div class="message-meta">
+                        De: +55 41 99203-0057<br>
+                        Resposta automática (Twilio)
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding: 20px; background: #161b22; border-radius: 8px;">
+                <strong>🎯 Fluxo Completo:</strong>
+                <div style="margin-top: 10px; color: #8b949e; font-size: 14px;">
+                    1️⃣ Cliente envia WhatsApp → 2️⃣ Webhook captura → 3️⃣ Lead criado no CRM → 4️⃣ Resposta automática → 5️⃣ Admin recebe notificação
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

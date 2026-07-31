@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Sem nome",
+        "email": null,
+        "phone": null,
+        "whatsapp": null,
+        "property_type": "residential",
+        "operation_type": "sale",
+        "source": "website",
+        "status": "novo",
+        "ai_score": 71,
+        "created_at": "2026-07-30T19:35:38.330535Z",
+        "updated_at": "2026-07-30T19:35:38.330541Z",
+        "id": 1
+    },
+    {
+        "name": "Romulo Carracho",
+        "email": "romulo@tauritecnologia.com.br",
+        "phone": null,
+        "whatsapp": "41985197025",
+        "property_type": "house",
+        "operation_type": "sale",
+        "source": "website",
+        "status": "novo",
+        "ai_score": 42,
+        "created_at": "2026-07-30T19:36:01.369531Z",
+        "updated_at": "2026-07-30T19:36:01.369538Z",
+        "id": 2
+    }
+]

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yesmyhome-crm
+    restart: always
+    working_dir: /app
+    environment:
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/app/database/database.sqlite
+      - APP_DEBUG=false
+      - APP_ENV=production
+    volumes:
+      - ./:/app
+      - ./storage:/app/storage
+      - ./bootstrap/cache:/app/bootstrap/cache
+      - ./database:/app/database
+    ports:
+      - "8000:80"
+      - "9000:9000"
+    networks:
+      - yesmyhome-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL opcional (para produção)
+  postgres:
+    image: postgres:15-alpine
+    container_name: yesmyhome-db
+    restart: always
+    environment:
+      POSTGRES_DB: yesmyhome
+      POSTGRES_USER: yesmyhome
+      POSTGRES_PASSWORD: SecurePassword123!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - yesmyhome-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yesmyhome"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  yesmyhome-network:
+    driver: bridge

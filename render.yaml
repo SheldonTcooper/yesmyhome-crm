@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: yesmyhome-crm
+    env: php
+    region: oregon
+    plan: free
+
+    # Build command
+    buildCommand: composer install && php artisan key:generate && php artisan migrate --force
+
+    # Start command
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+
+    # Environment variables
+    envVars:
+      - key: APP_NAME
+        value: "YesMyHome CRM"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://yesmyhome-crm.onrender.com
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /opt/render/project/src/database/database.sqlite
+
+    # Dockerfile (opcional, mas recomendado)
+    dockerfilePath: ./Dockerfile
+
+    healthCheckPath: /health
+    healthCheckTimeout: 30

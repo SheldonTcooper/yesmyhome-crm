@@ -1,0 +1,129 @@
+================================================================================
+TESTE RÁPIDO - MIGRAÇÕES SQLITE
+================================================================================
+
+⚠️  FAÇA BACKUP DO SEU BANCO DE DADOS ANTES DE TESTAR!
+
+================================================================================
+TESTE 1: LIMPAR E MIGRAR COM SQLite
+================================================================================
+
+1. Editar .env:
+   DB_CONNECTION=sqlite
+   DB_DATABASE=C:\Users\romul\Desktop\laravel-crm-2.2\database\database.sqlite
+
+2. Remover banco antigo (se existir):
+   $ rm database/database.sqlite
+
+3. Executar migração:
+   $ php artisan migrate:fresh
+
+4. Verificar status:
+   $ php artisan migrate:status
+
+✅ SUCESSO se não houver erros de "dropForeign" ou "This database driver does not support"
+
+================================================================================
+TESTE 2: VERIFICAR COM MYSQL
+================================================================================
+
+1. Editar .env:
+   DB_CONNECTION=mysql
+   DB_HOST=localhost
+   DB_DATABASE=laravel_crm
+   DB_USERNAME=root
+   DB_PASSWORD=
+
+2. Executar:
+   $ php artisan migrate:fresh
+
+✅ SUCESSO se o banco foi criado sem erros
+
+================================================================================
+TESTE 3: LIMPAR CACHE (se houver problemas)
+================================================================================
+
+$ php artisan config:clear
+$ php artisan cache:clear
+$ composer dump-autoload
+
+================================================================================
+TESTE 4: VERIFICAR LOG DE MIGRAÇÕES
+================================================================================
+
+1. Listar todas as migrações:
+   $ php artisan migrate:status
+
+2. Procurar por "failed" ou erros nos logs:
+   $ tail -f storage/logs/laravel.log
+
+================================================================================
+POSSÍVEIS ERROS E SOLUÇÕES
+================================================================================
+
+Erro: "SQLSTATE[HY000]: General error: 1 near "DROP FOREIGN KEY": syntax error"
+Solução: Este erro NÃO deve ocorrer mais. Se ocorrer, execute:
+  $ php artisan config:clear
+  $ php artisan cache:clear
+
+Erro: "This database driver does not support dropping foreign keys by name"
+Solução: Esttable erro foi CORRIGIDO. Se persistir:
+  1. Verifique se o arquivo foi atualizado corretamente
+  2. Execute: composer dump-autoload
+  3. Tente novamente
+
+Erro: "Base table or view not found"
+Solução: Banco de dados vazio. Primeira migração precisa ser bem-sucedida.
+
+================================================================================
+COMANDOS ÚTEIS
+================================================================================
+
+# Ver todas as migrações
+$ php artisan migrate:status
+
+# Rodar apenas uma migração
+$ php artisan migrate --path=packages/Webkul/Lead/src/Database/Migrations
+
+# Rollback da última migração (revert)
+$ php artisan migrate:rollback --step=1
+
+# Rollback de todas as migrações
+$ php artisan migrate:reset
+
+# Limpar + Migrar (CUIDADO: deleta tudo)
+$ php artisan migrate:fresh
+
+# Ver detalhes de uma migração
+$ php artisan migrate:status --path=packages/Webkul/Lead/src/Database/Migrations
+
+================================================================================
+VERIFICAÇÃO PÓS-TESTE
+================================================================================
+
+1. Banco de dados criado com sucesso
+2. Nenhum erro de "dropForeign" em SQLite
+3. Todas as tabelas foram criadas
+4. Foreign keys estão configuradas (exceto em SQLite durante drop)
+5. Seeders rodaram corretamente (se usado --seed)
+6. Aplicação inicia normalmente
+
+================================================================================
+ENTREGA
+================================================================================
+
+Se TODOS os testes passarem:
+
+1. Commit das mudanças:
+   $ git add .
+   $ git commit -m "Fix: adicionar proteção SQLite para migrações com dropForeign"
+
+2. Push para repositório:
+   $ git push origin main
+
+3. Documentação revisada:
+   • MIGRATION_SQLITE_FIX.md (instruções completas)
+   • DETAILED_CHANGES.md (mudanças exatas por arquivo)
+   • SQLITE_FIX_SUMMARY.txt (resumo executivo)
+
+================================================================================

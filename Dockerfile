@@ -7,8 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl zip unzip sqlite3 libsqlite3-dev nginx supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
-RUN docker-php-ext-install -j$(nproc) pdo pdo_sqlite pdo_mysql bcmath
+# Install PHP extensions (all dependencies needed by composer packages)
+RUN apt-get update && apt-get install -y libzip-dev && rm -rf /var/lib/apt/lists/* && \
+    docker-php-ext-install -j$(nproc) pdo pdo_sqlite pdo_mysql bcmath gd zip calendar
 
 # Install Composer first (before copying code)
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

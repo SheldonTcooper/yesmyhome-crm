@@ -46,17 +46,30 @@ Route::get('/test-sms/{phone}', function ($phone) {
 });
 
 // Webhook para receber leads do website
-Route::post('/webhook/create-lead', function (Request $request, \App\Services\YesMyHomeIntegrationService $service) {
-    $data = json_decode(file_get_contents('php://input'), true) ?? [];
-    $data['source'] = 'website';
+Route::post('/webhook/create-lead', function (Request $request) {
+    try {
+        $lead = [
+            'id' => time(),
+            'name' => $request->input('name', 'Sem nome'),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'whatsapp' => $request->input('whatsapp'),
+            'property_type' => $request->input('property_type'),
+            'operation_type' => $request->input('operation_type'),
+            'source' => 'website',
+            'created_at' => now(),
+        ];
 
-    $result = $service->createLead($data);
+        // Salvar em arquivo JSON
+        $file = storage_path('leads.json');
+        $leads = file_exists($file) ? json_decode(file_get_contents($file), true) ?? [] : [];
+        $leads[] = $lead;
+        @file_put_contents($file, json_encode($leads, JSON_PRETTY_PRINT));
 
-    if ($result) {
-        return response()->json(['success' => true, 'lead_id' => $result['lead']['id'] ?? null], 201);
+        return response()->json(['success' => true, 'lead_id' => $lead['id']], 201);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
-
-    return response()->json(['success' => false, 'error' => 'Erro ao criar lead'], 500);
 });
 
 // Enviar mensagem automática

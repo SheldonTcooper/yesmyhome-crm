@@ -1,94 +1,140 @@
-# Multi-stage build
-FROM php:8.2-fpm-alpine AS builder
+FROM php:8.2-fpm
 
+# Set working directory
 WORKDIR /app
 
-# Instalar dependências do sistema
-RUN apk add --no-cache \
-    curl \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     git \
+    curl \
     libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    zlib-dev \
-    libzip-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    ziparchive \
     zip \
-    unzip
-
-# Instalar extensões PHP
-RUN docker-php-ext-install -j$(nproc) \
-    gd \
-    pdo \
-    pdo_sqlite \
-    pdo_mysql \
-    openssl \
-    mbstring \
-    json \
-    fileinfo \
-    curl \
-    zip
-
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Copiar arquivos
-COPY . .
-
-# Instalar dependências PHP
-RUN composer install --no-interaction --optimize-autoloader
-
-# Gerar chave da aplicação
-RUN php artisan key:generate || true
-
-# Runtime stage
-FROM php:8.2-fpm-alpine
-
-WORKDIR /app
-
-# Instalar runtime deps
-RUN apk add --no-cache \
-    libpng \
-    libjpeg-turbo \
-    freetype \
+    unzip \
+    sqlite3 \
+    libsqlite3-dev \
+    postgresql-client \
+    libpq-dev \
     nginx \
-    supervisor
+    supervisor \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copiar extensões PHP
-COPY --from=php:8.2-fpm-alpine /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
-COPY --from=php:8.2-fpm-alpine /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
-
-# Instalar extensões
-RUN docker-php-ext-install -j$(nproc) \
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) \
     gd \
     pdo \
     pdo_sqlite \
     pdo_mysql \
+    pdo_pgsql \
     openssl \
     mbstring \
-    json \
     fileinfo \
     curl \
-    zip
+    zip \
+    bcmath \
+    ctype \
+    json
 
-# Copiar aplicação
-COPY --from=builder /app /app
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copiar configurações
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/supervisord.conf /etc/supervisord.conf
-COPY docker/php.ini /usr/local/etc/php/conf.d/laravel.ini
+# Copy application files
+COPY . /app
 
-# Criar diretórios necessários
-RUN mkdir -p /app/storage/logs && \
-    chmod -R 777 /app/storage && \
-    chmod -R 777 /app/bootstrap/cache
+# Set permissions
+RUN chown -R www-data:www-data /app && \
+    chmod -R 755 /app && \
+    chmod -R 775 /app/storage /app/bootstrap/cache
 
-# Expor portas
-EXPOSE 80 9000
+# Install PHP dependencies
+RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+# Generate app key
+RUN php artisan key:generate --force 2>/dev/null || true
+
+# Configure PHP
+RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/laravel.ini && \
+    echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/laravel.ini && \
+    echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/laravel.ini && \
+    echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/laravel.ini && \
+    echo "date.timezone = America/Sao_Paulo" >> /usr/local/etc/php/conf.d/laravel.ini
+
+# Configure PHP-FPM
+RUN echo "[global]" > /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "daemonize = no" >> /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "[www]" >> /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "listen = 127.0.0.1:9000" >> /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "pm = dynamic" >> /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "pm.max_children = 5" >> /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "pm.start_servers = 2" >> /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "pm.min_spare_servers = 1" >> /usr/local/etc/php-fpm.d/zzz-docker.conf && \
+    echo "pm.max_spare_servers = 3" >> /usr/local/etc/php-fpm.d/zzz-docker.conf
+
+# Configure Nginx
+RUN mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled && \
+    echo "user www-data;" > /etc/nginx/nginx.conf && \
+    echo "worker_processes auto;" >> /etc/nginx/nginx.conf && \
+    echo "error_log /var/log/nginx/error.log warn;" >> /etc/nginx/nginx.conf && \
+    echo "pid /var/run/nginx.pid;" >> /etc/nginx/nginx.conf && \
+    echo "" >> /etc/nginx/nginx.conf && \
+    echo "events { worker_connections 1024; }" >> /etc/nginx/nginx.conf && \
+    echo "" >> /etc/nginx/nginx.conf && \
+    echo "http {" >> /etc/nginx/nginx.conf && \
+    echo "  include /etc/nginx/mime.types;" >> /etc/nginx/nginx.conf && \
+    echo "  default_type application/octet-stream;" >> /etc/nginx/nginx.conf && \
+    echo "  sendfile on;" >> /etc/nginx/nginx.conf && \
+    echo "  keepalive_timeout 65;" >> /etc/nginx/nginx.conf && \
+    echo "  client_max_body_size 100M;" >> /etc/nginx/nginx.conf && \
+    echo "  gzip on;" >> /etc/nginx/nginx.conf && \
+    echo "" >> /etc/nginx/nginx.conf && \
+    echo "  server {" >> /etc/nginx/nginx.conf && \
+    echo "    listen 80;" >> /etc/nginx/nginx.conf && \
+    echo "    root /app/public;" >> /etc/nginx/nginx.conf && \
+    echo "    index index.php;" >> /etc/nginx/nginx.conf && \
+    echo "" >> /etc/nginx/nginx.conf && \
+    echo "    location / {" >> /etc/nginx/nginx.conf && \
+    echo "      try_files \$uri \$uri/ /index.php?\$query_string;" >> /etc/nginx/nginx.conf && \
+    echo "    }" >> /etc/nginx/nginx.conf && \
+    echo "" >> /etc/nginx/nginx.conf && \
+    echo "    location ~ \\.php\$ {" >> /etc/nginx/nginx.conf && \
+    echo "      fastcgi_pass 127.0.0.1:9000;" >> /etc/nginx/nginx.conf && \
+    echo "      fastcgi_index index.php;" >> /etc/nginx/nginx.conf && \
+    echo "      include fastcgi_params;" >> /etc/nginx/nginx.conf && \
+    echo "      fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;" >> /etc/nginx/nginx.conf && \
+    echo "    }" >> /etc/nginx/nginx.conf && \
+    echo "  }" >> /etc/nginx/nginx.conf && \
+    echo "}" >> /etc/nginx/nginx.conf
+
+# Configure Supervisor
+RUN mkdir -p /var/log/supervisor && \
+    echo "[supervisord]" > /etc/supervisor/conf.d/laravel.conf && \
+    echo "nodaemon=true" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "[program:php-fpm]" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "command=/usr/local/sbin/php-fpm" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "autostart=true" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "autorestart=true" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "stderr_logfile=/var/log/supervisor/php-fpm.err.log" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "stdout_logfile=/var/log/supervisor/php-fpm.out.log" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "[program:nginx]" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "command=/usr/sbin/nginx -g 'daemon off;'" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "autostart=true" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "autorestart=true" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "stderr_logfile=/var/log/supervisor/nginx.err.log" >> /etc/supervisor/conf.d/laravel.conf && \
+    echo "stdout_logfile=/var/log/supervisor/nginx.out.log" >> /etc/supervisor/conf.d/laravel.conf
+
+# Expose port
+EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD php artisan tinker --execute="echo 'OK'" || exit 1
+    CMD curl -f http://localhost/ || exit 1
 
-# Comando inicial
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Start supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

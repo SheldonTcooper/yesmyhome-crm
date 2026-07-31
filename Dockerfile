@@ -10,6 +10,8 @@ RUN apk add --no-cache \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
+    zlib-dev \
+    libzip-dev \
     zip \
     unzip
 

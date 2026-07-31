@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip sqlite3 nginx supervisor \
+    git curl zip unzip sqlite3 libsqlite3-dev nginx supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 # Install only essential PHP extensions

@@ -10,9 +10,12 @@ use Illuminate\Http\Request;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/health', function () {
+    return response()->json(['success' => true, 'backend_online' => false]);
+});
+
 Route::post('/leads', [LeadController::class, 'create']);
 Route::get('/leads', [LeadController::class, 'list']);
-Route::get('/health', [LeadController::class, 'health']);
 
 // Teste de SMS direto
 Route::get('/test-sms/{phone}', function ($phone) {

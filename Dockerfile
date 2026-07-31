@@ -2,13 +2,14 @@ FROM php:8.2-fpm
 
 WORKDIR /app
 
-# Install all dependencies upfront
+# Install ALL dependencies upfront (including dev libs for PHP extensions)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl zip unzip sqlite3 libsqlite3-dev nginx supervisor \
+    git curl zip unzip sqlite3 nginx supervisor \
+    libsqlite3-dev libzip-dev libpng-dev libjpeg-turbo-dev libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (all dependencies needed by composer packages)
-RUN apt-get update && apt-get install -y libzip-dev && rm -rf /var/lib/apt/lists/* && \
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install -j$(nproc) pdo pdo_sqlite pdo_mysql bcmath gd zip calendar
 
 # Install Composer first (before copying code)

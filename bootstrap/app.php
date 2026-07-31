@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(CanInstall::class);
+        // $middleware->append(CanInstall::class); // Disabled - use without installation
 
         $middleware->encryptCookies(except: [
             'dark_mode',
